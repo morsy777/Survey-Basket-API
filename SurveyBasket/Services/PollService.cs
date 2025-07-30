@@ -12,7 +12,7 @@ public class PollService : IPollService
     ];
 
     public IEnumerable<Poll> GetAll() => _polls;
-    public Poll? Get(int id) => _polls.SingleOrDefault(pool  => pool.Id == id);
+    public Poll? Get(int id) => _polls.SingleOrDefault(pool => pool.Id == id);
 
     public Poll Add(Poll poll)
     {
