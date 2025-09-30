@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Contracts.Authentication;
+﻿using System.Text.Json.Serialization;
+
+namespace SurveyBasket.Contracts.Authentication;
 
 public record AuthResponse(
     string Id,
@@ -6,5 +8,7 @@ public record AuthResponse(
     string FirstName,
     string LastName,
     string Token,
-    int ExpiresIn
-);
+    int ExpiresIn,
+    string RefreshToken,
+    DateTime RefreshTokenExpiration
+);  

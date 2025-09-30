@@ -1,11 +1,12 @@
-﻿global using Microsoft.AspNetCore.Mvc;
+﻿global using System.Reflection;
+global using Microsoft.Extensions.Options;
+global using Microsoft.AspNetCore.Mvc;
 
 global using Mapster;
 global using MapsterMapper;
 
-global using System.Reflection;
-
 global using FluentValidation;
+global using System.ComponentModel.DataAnnotations;
 global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 global using Microsoft.EntityFrameworkCore;
