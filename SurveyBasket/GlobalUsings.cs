@@ -23,6 +23,7 @@ global using System.Text;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using SurveyBasket.Authentication;
 global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Cors;
 
 global using SurveyBasket;
 global using SurveyBasket.Entities;

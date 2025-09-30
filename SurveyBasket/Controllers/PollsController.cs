@@ -8,6 +8,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     private readonly IPollService _pollService = pollService;
 
     [HttpGet("GetAll")]
+    [EnableCors("MyPolicy2")]
     public async Task<IActionResult> GetAll(CancellationToken cancellation)
     {
         var polls = await _pollService.GetAllAsync(cancellation);

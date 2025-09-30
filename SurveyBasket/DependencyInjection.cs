@@ -9,7 +9,7 @@ public static class DependencyInjection
         var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
 
         services.AddCors(options =>
-            options.AddPolicy("MyPolicy", builder =>
+            options.AddDefaultPolicy(builder =>
                 builder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
