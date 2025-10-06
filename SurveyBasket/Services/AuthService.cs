@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using SurveyBasket.Errors;
+using System.Security.Cryptography;
 
 namespace SurveyBasket.Services;
 
@@ -9,20 +10,20 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
     private readonly int _refreshTokenExpireDays = 14;
 
-    public async Task<AuthResponse?> GetTokenAsync(string email, string password,
+    public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password,
         CancellationToken cancellation = default)
     {
         // Check user by using email?
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
         // Check the password
         var isValid = await _userManager.CheckPasswordAsync(user, password);
 
         if (!isValid)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials); 
 
         // Generate JWT Token
         var (token, expiresIn) = _jwtProvider.GenerateToken(user);
@@ -41,7 +42,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
 
         // Return Token & Refresh Token
-        return new AuthResponse(
+        var response = new AuthResponse(
                 user.Id,
                 user.Email,
                 user.FirstName,
@@ -51,6 +52,8 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
                 refreshToken,
                 refreshTokenExpiration
         );
+
+        return Result.Success(response);
 
     }
 
