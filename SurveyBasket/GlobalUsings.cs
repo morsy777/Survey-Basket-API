@@ -33,6 +33,8 @@ global using SurveyBasket.Persistence;
 global using SurveyBasket.Contracts.Authentication;
 global using SurveyBasket.Abstractions;
 global using SurveyBasket.Errors;
+global using SurveyBasket.Abstractions.Consts;
+
 
 
 

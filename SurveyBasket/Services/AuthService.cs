@@ -62,17 +62,17 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         var userId = _jwtProvider.ValidateToken(token);
 
         if (userId is null)
-            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
+            return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
 
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user is null)
-            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
+            return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
 
         if (userRefreshToken is null)
-            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
+            return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);
 
         // Revoke the old refresh token
         userRefreshToken.RevokedOn = DateTime.UtcNow;

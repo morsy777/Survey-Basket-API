@@ -13,7 +13,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
-        return authResult.IsSuccess 
+        return authResult.IsSuccess
             ? Ok(authResult.Value)
             : Problem(statusCode: StatusCodes.Status404NotFound, title: authResult.Error.Code, detail: authResult.Error.Description);
     }
@@ -22,10 +22,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
-
-        // To Send Tokens in Cookies
-        //if (authResult is not null && !string.IsNullOrEmpty(authResult.RefreshToken))
-        //    SetRefreshTokenCookies(authResult.RefreshToken, authResult.RefreshTokenExpiration);
 
         return authResult.IsSuccess 
             ? Ok(authResult.Value)
