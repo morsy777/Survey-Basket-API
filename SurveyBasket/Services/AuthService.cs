@@ -57,22 +57,22 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
     }
 
-    public async Task<AuthResponse?> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellation = default)
+    public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellation = default)
     {
         var userId = _jwtProvider.ValidateToken(token);
 
         if (userId is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
 
         var user = await _userManager.FindByIdAsync(userId);
 
-        if (user is null) 
-            return null;
+        if (user is null)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
 
-        if (userRefreshToken is null) 
-            return null;
+        if (userRefreshToken is null)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidTokens);
 
         // Revoke the old refresh token
         userRefreshToken.RevokedOn = DateTime.UtcNow;
@@ -94,7 +94,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         await _userManager.UpdateAsync(user);
 
         // Return Token & Refresh Token
-        return new AuthResponse(
+        var response = new AuthResponse(
                 user.Id,
                 user.Email,
                 user.FirstName,
@@ -105,6 +105,7 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
                 refreshTokenExpiration
         );
 
+        return Result.Success<AuthResponse>(response);
     }
 
     // Generate Refresh Token

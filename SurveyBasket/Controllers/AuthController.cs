@@ -13,7 +13,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
-        return authResult.IsSuccess ? Ok(authResult.Value) : BadRequest(authResult.Error);
+        return authResult.IsSuccess 
+            ? Ok(authResult.Value)
+            : Problem(statusCode: StatusCodes.Status404NotFound, title: authResult.Error.Code, detail: authResult.Error.Description);
     }
 
     [HttpPost("refreshToken")]
@@ -21,11 +23,13 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-        if (authResult is not null && !string.IsNullOrEmpty(authResult.RefreshToken))
-            SetRefreshTokenCookies(authResult.RefreshToken, authResult.RefreshTokenExpiration);
+        // To Send Tokens in Cookies
+        //if (authResult is not null && !string.IsNullOrEmpty(authResult.RefreshToken))
+        //    SetRefreshTokenCookies(authResult.RefreshToken, authResult.RefreshTokenExpiration);
 
-        return authResult is null ? BadRequest("Invalid Email or Password.") : Ok(authResult);
-
+        return authResult.IsSuccess 
+            ? Ok(authResult.Value)
+            : Problem(statusCode: StatusCodes.Status404NotFound, title: authResult.Error.Code, detail: authResult.Error.Description);
     }
 
     // Return Refresh Token in Cookies
