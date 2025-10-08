@@ -13,9 +13,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var polls = await _pollService.GetAllAsync(cancellation);
 
-        return polls.IsSuccess
-            ? Ok(polls.Value)
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: polls.Error.Code, detail: polls.Error.Description);
+        return polls.IsSuccess ? Ok(polls.Value) : polls.ToProblem();
     }
 
     [HttpGet("{Id}")]
@@ -24,9 +22,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.GetAsync(Id, cancellationToken);
 
-        return result.IsSuccess 
-            ? Ok(result.Value) 
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
     [HttpPost("")]
@@ -44,9 +40,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.UpdateAsync(id, request, cancellationToken);
 
-        return result.IsSuccess 
-            ? NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSuccess ? NoContent() : result.ToProblem();
     }
 
     [HttpDelete("{id}")]
@@ -55,9 +49,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.DeleteAsync(id, cancellationToken);
 
-        return result.IsSuccess 
-            ? NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSuccess ? NoContent() : result.ToProblem();
     }
 
     [HttpPut("{id}/toggleIsPublish")]
@@ -65,8 +57,6 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.TogglePublishStatusAsync(id, cancellationToken);
 
-        return result.IsSuccess 
-            ? NoContent()
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: result.Error.Code, detail: result.Error.Description);
+        return result.IsSuccess ? NoContent() : result.ToProblem();
     }
 }
