@@ -114,4 +114,28 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 
+    public async Task<bool> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellation = default)
+    {
+        var userId = _jwtProvider.ValidateToken(token);
+
+        if (userId is null)
+            return false;
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+            return false;
+
+        var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
+
+        if (userRefreshToken is null)
+            return false;
+
+        userRefreshToken.RevokedOn = DateTime.UtcNow;
+
+        await _userManager.UpdateAsync(user);
+
+        return true;
+    }
+
 }

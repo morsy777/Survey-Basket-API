@@ -12,10 +12,10 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<IActionResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
-
+        
         return authResult.IsSuccess
-            ? Ok(authResult.Value)
-            : Problem(statusCode: StatusCodes.Status404NotFound, title: authResult.Error.Code, detail: authResult.Error.Description);
+          ? Ok(authResult.Value)
+          : authResult.ToProblem(StatusCodes.Status400BadRequest);
     }
 
     [HttpPost("refreshToken")]
@@ -26,6 +26,14 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authResult.IsSuccess 
             ? Ok(authResult.Value)
             : Problem(statusCode: StatusCodes.Status404NotFound, title: authResult.Error.Code, detail: authResult.Error.Description);
+    }
+
+    [HttpPut("Revoke-RefreshToken")]
+    public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var isRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
+
+        return isRevoked ? Ok() : BadRequest("Operation failed");
     }
 
     // Return Refresh Token in Cookies
