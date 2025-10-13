@@ -22,12 +22,20 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
 
-    [HttpPut("Revoke-RefreshToken")]
+    [HttpPut("revoke-refreshToken")]
     public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
         return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
+    {
+        var authResult = await _authService.RegisterAsync(request, cancellationToken);
+
+        return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
 
     // Return Refresh Token in Cookies
