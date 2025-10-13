@@ -1,15 +1,18 @@
-﻿using SurveyBasket.Errors;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using SurveyBasket.Errors;
 using System.Security.Cryptography;
 
 namespace SurveyBasket.Services;
 
 public class AuthService(UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    IJwtProvider jwtProvider) : IAuthService
+    IJwtProvider jwtProvider,
+    ILogger<AuthService> logger) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
+    private readonly ILogger<AuthService> _logger = logger;
 
     private readonly int _refreshTokenExpireDays = 14;
 
@@ -141,7 +144,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         return Result.Success();
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request,CancellationToken cancellation = default)
+    public async Task<Result> RegisterAsync(RegisterRequest request,CancellationToken cancellation = default)
     {
         // TODO: Check if the email already exists
         var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellation);
@@ -158,40 +161,21 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         // TODO: If creation succeeded, generate Access Token, Refresh Token and return them
         if(result.Succeeded)
         {
-            // Generate JWT Token
-            var (token, expiresIn) = _jwtProvider.GenerateToken(user);
+            // TODO: Generat Email Confirmation Token and Encode it to BaseURL
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-            // Call Refresh Token Genrator Function
-            var refreshToken = GenerateRefreshToke();
-            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpireDays);
+            // TODO: Test The Code using Logging
+            _logger.LogInformation($"Confirmation code: {code}");
 
-            // Add Refresh Token to DB
-            user.RefreshTokens.Add(new RefreshToken
-            {
-                Token = refreshToken,
-                ExpiresOn = refreshTokenExpiration
-            });
-
-            await _userManager.UpdateAsync(user);
-
-            // Return Token & Refresh Token
-            var response = new AuthResponse(
-                    user.Id,
-                    user.Email,
-                    user.FirstName,
-                    user.LastName,
-                    token,
-                    expiresIn,
-                    refreshToken,
-                    refreshTokenExpiration
-            );
-
-            return Result.Success(response);
+            // TODO: Send email
+            
+            return Result.Success();
         }
 
         // TODO: Return Failure
         var error = result.Errors.First();
 
-        return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
     }
 }
