@@ -38,6 +38,14 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
     }
 
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request)
+    {
+        var authResult = await _authService.ConfirmEmailAsync(request);
+
+        return authResult.IsSuccess ? Ok() : authResult.ToProblem();
+    }
+
     // Return Refresh Token in Cookies
     private void SetRefreshTokenCookies(string refreshToken, DateTime expires)
     {

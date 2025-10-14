@@ -178,4 +178,38 @@ public class AuthService(UserManager<ApplicationUser> userManager,
 
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
     }
+
+    public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
+    {
+        // TODO:Check UserId by using UserManager
+        if(await _userManager.FindByIdAsync(request.UserId) is not { } user)
+            return Result.Failure(UserErrors.InvalidCode);
+
+        // TODO:Check if the email is already confirmed
+        if (user.EmailConfirmed)
+            return Result.Failure(UserErrors.DuplicatedConfirmation);
+
+        // TODO:Decode the code by using WebEncoder.Base64UrlDecoder(code) and then convert it to string
+        var code = request.Code;
+
+        try
+        {
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+        }
+        catch (FormatException)
+        {
+            Result.Failure(UserErrors.InvalidCode);
+        }
+
+        // TODO:Confrim the email by using UserManager
+        var result = await _userManager.ConfirmEmailAsync(user, code);
+
+        // TODO:If the email confirmed successfully, return Success else return Failure
+        if(result.Succeeded) 
+            return Result.Success();
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
 }

@@ -16,4 +16,11 @@ public static class UserErrors
     
     public static readonly Error EmailNotConfirmed =
         new Error("User.EmailNotConfirmed", "Email is not confirmed", StatusCodes.Status401Unauthorized);
+
+    public static readonly Error InvalidCode =
+        new Error("User.InvalidCode", "Invalid confirmation code", StatusCodes.Status401Unauthorized);
+    
+    public static readonly Error DuplicatedConfirmation =
+        new Error("User.DuplicatedConfirmation", "The email already confrimed", StatusCodes.Status401Unauthorized);
+
 }
