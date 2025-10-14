@@ -181,15 +181,15 @@ public class AuthService(UserManager<ApplicationUser> userManager,
 
     public async Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request)
     {
-        // TODO:Check UserId by using UserManager
+        // TODO: Check UserId by using UserManager
         if(await _userManager.FindByIdAsync(request.UserId) is not { } user)
             return Result.Failure(UserErrors.InvalidCode);
 
-        // TODO:Check if the email is already confirmed
+        // TODO: Check if the email is already confirmed
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-        // TODO:Decode the code by using WebEncoder.Base64UrlDecoder(code) and then convert it to string
+        // TODO: Decode the code by using WebEncoder.Base64UrlDecoder(code) and then convert it to string
         var code = request.Code;
 
         try
@@ -201,15 +201,37 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             Result.Failure(UserErrors.InvalidCode);
         }
 
-        // TODO:Confrim the email by using UserManager
+        // TODO: Confrim the email by using UserManager
         var result = await _userManager.ConfirmEmailAsync(user, code);
 
-        // TODO:If the email confirmed successfully, return Success else return Failure
+        // TODO: If the email confirmed successfully, return Success else return Failure
         if(result.Succeeded) 
             return Result.Success();
 
         var error = result.Errors.First();
 
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> ResendConfirmationEmailAsync(ResendConfirmationEmailRequest request)
+    {
+        // TODO: Find user by using email
+        if(await _userManager.FindByEmailAsync(request.Email) is not { } user)
+            return Result.Success();
+
+        // TODO: Check if email already confirmed
+        if (user.EmailConfirmed)
+            return Result.Failure(UserErrors.DuplicatedConfirmation);
+
+        // TODO: Generate new code 
+        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        // TODO: logg it for testing
+        _logger.LogInformation(code);
+
+        // TODO: Send Email
+
+        return Result.Success();
     }
 }
