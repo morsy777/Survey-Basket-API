@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket;
+﻿using SurveyBasket.Settings;
+
+namespace SurveyBasket;
 
 public static class DependencyInjection
 {
@@ -18,7 +20,6 @@ public static class DependencyInjection
         );
 
 
-
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -36,6 +37,9 @@ public static class DependencyInjection
 
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
+
+        // Mail Settings
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
         return services;
     }
