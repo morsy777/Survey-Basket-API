@@ -1,4 +1,5 @@
-﻿using SurveyBasket.Settings;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
+using SurveyBasket.Settings;
 
 namespace SurveyBasket;
 
@@ -33,12 +34,13 @@ public static class DependencyInjection
 
         services.AddFluentValidationConfig();
 
-        services.AddAuthConfig(configuration); 
+        services.AddAuthConfig(configuration);
 
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
 
         // Mail Settings
+        services.AddScoped<IEmailSender, EmailService>();
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
         return services;

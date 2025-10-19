@@ -35,7 +35,12 @@ global using SurveyBasket.Abstractions;
 global using SurveyBasket.Errors;
 global using SurveyBasket.Abstractions.Consts;
 
-
+global using Microsoft.AspNetCore.Identity.UI.Services;
+global using MimeKit;
+global using MailKit;
+global using MailKit.Net.Smtp;
+global using MailKit.Security;
+global using SurveyBasket.Settings;
 
 
 
