@@ -2,7 +2,7 @@
 
 public class EmailService(IOptions<MailSettings> mailSettings) : IEmailSender
 {
-    private MailSettings _mailSettings = mailSettings.Value;
+    private readonly MailSettings _mailSettings = mailSettings.Value;
 
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
@@ -32,6 +32,5 @@ public class EmailService(IOptions<MailSettings> mailSettings) : IEmailSender
         smtp.Authenticate(_mailSettings.Mail, _mailSettings.Password);
         await smtp.SendAsync(message);
         smtp.Disconnect(true);
-
     }
 }

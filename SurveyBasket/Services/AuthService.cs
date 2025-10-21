@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using SurveyBasket.Errors;
+using SurveyBasket.Helpers;
 using System.Security.Cryptography;
 
 namespace SurveyBasket.Services;
@@ -7,12 +8,16 @@ namespace SurveyBasket.Services;
 public class AuthService(UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
     IJwtProvider jwtProvider,
-    ILogger<AuthService> logger) : IAuthService
+    ILogger<AuthService> logger,
+    IEmailSender emailSender,
+    IHttpContextAccessor httpContextAccessor) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly ILogger<AuthService> _logger = logger;
+    private readonly IEmailSender _emailSender = emailSender;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     private readonly int _refreshTokenExpireDays = 14;
 
@@ -168,8 +173,24 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             // TODO: Test The Code using Logging
             _logger.LogInformation($"Confirmation code: {code}");
 
-            // TODO: Send email
-            
+            /// TODO: Send email ///
+
+            // TODO: Take the frontend origin from the request headers
+            var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+            // TODO: Generate email body
+            var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+                templateModel: new Dictionary<string, string>
+                {
+                    {"{{name}}", user.FirstName},
+                    {"{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
+                }
+
+            );
+
+            // TODO: Send the email
+            await _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody);
+
             return Result.Success();
         }
 

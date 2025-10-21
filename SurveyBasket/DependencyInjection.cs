@@ -42,6 +42,7 @@ public static class DependencyInjection
         // Mail Settings
         services.AddScoped<IEmailSender, EmailService>();
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
+        services.AddHttpContextAccessor();
 
         return services;
     }

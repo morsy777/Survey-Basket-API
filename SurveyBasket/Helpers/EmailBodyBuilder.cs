@@ -18,7 +18,7 @@ public static class EmailBodyBuilder
 
         // TODO: replace each placeholder in the template with the corresponding value from the templateModel
         foreach (var item in templateModel)
-            body.Replace(item.Key, item.Value);
+            body = body.Replace(item.Key, item.Value);
 
         return body;
     }
