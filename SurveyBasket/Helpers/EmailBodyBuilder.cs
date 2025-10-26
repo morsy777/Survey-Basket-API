@@ -12,9 +12,9 @@ public static class EmailBodyBuilder
         var templatePath = $"{Directory.GetCurrentDirectory()}/Template/{template}.html";
 
         // TODO: read the template using stream reader and close stream
-        var stream = new StreamReader(templatePath);
-        var body = stream.ReadToEnd();
-        stream.Close();
+        var streamReader = new StreamReader(templatePath);
+        var body = streamReader.ReadToEnd();
+        streamReader.Close();
 
         // TODO: replace each placeholder in the template with the corresponding value from the templateModel
         foreach (var item in templateModel)

@@ -2,6 +2,7 @@
 using SurveyBasket.Errors;
 using SurveyBasket.Helpers;
 using System.Security.Cryptography;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SurveyBasket.Services;
 
@@ -173,23 +174,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             // TODO: Test The Code using Logging
             _logger.LogInformation($"Confirmation code: {code}");
 
-            /// TODO: Send email ///
-
-            // TODO: Take the frontend origin from the request headers
-            var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
-
-            // TODO: Generate email body
-            var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
-                templateModel: new Dictionary<string, string>
-                {
-                    {"{{name}}", user.FirstName},
-                    {"{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
-                }
-
-            );
-
-            // TODO: Send the email
-            await _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody);
+            // TODO: Send email
+            await SendConfirmationEmail(user, code);
 
             return Result.Success();
         }
@@ -210,7 +196,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-        // TODO: Decode the code by using WebEncoder.Base64UrlDecoder(code) and then convert it to string
+        // TODO: Decode the code by using WebEncoder.Base64UrlDecode(code) and then convert it to string
         var code = request.Code;
 
         try
@@ -252,7 +238,28 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         _logger.LogInformation(code);
 
         // TODO: Send Email
+        await SendConfirmationEmail(user, code);
 
         return Result.Success();
     }
+
+    private async Task SendConfirmationEmail(ApplicationUser user, string code)
+    {
+        // TODO: Take the frontend origin from the request headers
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+        // TODO: Generate email body
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+            templateModel: new Dictionary<string, string>
+            {
+                    {"{{name}}", user.FirstName},
+                    {"{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
+            }
+
+        );
+
+        // TODO: Send the email
+        await _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody);
+    }
+
 }

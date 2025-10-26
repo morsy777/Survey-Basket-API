@@ -22,7 +22,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
 
-    [HttpPut("revoke-refreshToken")]
+    [HttpPost("revoke-refreshToken")]
     public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
