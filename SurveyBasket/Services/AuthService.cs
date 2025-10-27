@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using SurveyBasket.Errors;
-using SurveyBasket.Helpers;
-using System.Security.Cryptography;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+﻿using Hangfire;
 
 namespace SurveyBasket.Services;
 
@@ -259,7 +255,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         );
 
         // TODO: Send the email
-        await _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody);
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody));
+        await Task.CompletedTask;
     }
 
 }

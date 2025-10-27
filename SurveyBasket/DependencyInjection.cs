@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using SurveyBasket.Settings;
 
 namespace SurveyBasket;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddFluentValidationConfig();
 
         services.AddAuthConfig(configuration);
+        services.AddBackgroundJobsConfig(configuration);
 
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
@@ -81,8 +83,6 @@ public static class DependencyInjection
 
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
-        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-
         services.AddOptions<JwtOptions>()
             .BindConfiguration(JwtOptions.SectionName)
             .ValidateDataAnnotations()
@@ -123,4 +123,19 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddBackgroundJobsConfig(this  IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection"))
+        );
+
+        // Add the processing server as IHostedService
+        services.AddHangfireServer();
+
+        return services;
+    }
 }
