@@ -1,6 +1,4 @@
-﻿using Hangfire;
-
-namespace SurveyBasket.Services;
+﻿namespace SurveyBasket.Services;
 
 public class AuthService(UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,

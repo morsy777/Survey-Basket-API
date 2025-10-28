@@ -46,6 +46,7 @@ global using SurveyBasket.Settings;
 global using Microsoft.AspNetCore.WebUtilities;
 global using SurveyBasket.Helpers;
 global using System.Security.Cryptography;
+global using Hangfire;
 
 
 

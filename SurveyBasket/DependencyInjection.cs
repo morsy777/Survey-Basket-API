@@ -40,6 +40,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // Mail Settings
         services.AddScoped<IEmailSender, EmailService>();
