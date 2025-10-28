@@ -1,6 +1,3 @@
-using Hangfire;
-using HangfireBasicAuthenticationFilter;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,6 +27,16 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     ],
     DashboardTitle = "Survery Basket Dashboard"
 });
+
+RecurringJob.AddOrUpdate<INotificationService>(
+    "weekly-notification-job",
+    x => x.SendNewPollsNotification(null),
+    Cron.Minutely()
+);
+
+BackgroundJob.Enqueue<INotificationService>(
+    x => x.SendNewPollsNotification(null)
+);
 
 app.UseCors();
 
