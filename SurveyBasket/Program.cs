@@ -28,7 +28,7 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
         }
     ],
     DashboardTitle = "Survery Basket Dashboard",
-    IsReadOnlyFunc = (DashboardContext context) => true
+    //IsReadOnlyFunc = (DashboardContext context) => true
 });
 
 RecurringJob.AddOrUpdate<INotificationService>(

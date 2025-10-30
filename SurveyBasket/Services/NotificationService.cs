@@ -19,6 +19,7 @@ public class NotificationService(
         if(id.HasValue)
         {
             var poll = await _context.Polls.SingleOrDefaultAsync(p => p.Id == id && p.IsPublished);
+            polls = [poll!];
         }
         else
         {
