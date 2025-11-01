@@ -1,5 +1,3 @@
-using Hangfire.Dashboard;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,15 +29,10 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     //IsReadOnlyFunc = (DashboardContext context) => true
 });
 
-RecurringJob.AddOrUpdate<INotificationService>(
-    "Daily-notification-job",
-    x => x.SendNewPollsNotification(null),
-    Cron.Daily(17, 30)
-);
-
-// For Testing:
-//BackgroundJob.Enqueue<INotificationService>(
-//    x => x.SendNewPollsNotification(null)
+//RecurringJob.AddOrUpdate<INotificationService>(
+//    "Daily-notification-job",
+//    x => x.SendNewPollsNotification(null),
+//    Cron.Daily(17, 30)
 //);
 
 app.UseCors();

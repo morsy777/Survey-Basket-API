@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Org.BouncyCastle.Tls;
 using SurveyBasket.Settings;
 
 namespace SurveyBasket;
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IUserService, UserService>();
 
         // Mail Settings
         services.AddScoped<IEmailSender, EmailService>();

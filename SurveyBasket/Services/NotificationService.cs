@@ -12,6 +12,8 @@ public class NotificationService(
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IEmailSender _emailSender = emailSender;
 
+
+    [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public async Task SendNewPollsNotification(int? id)
     {
         IEnumerable<Poll> polls = [];
