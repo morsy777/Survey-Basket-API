@@ -29,11 +29,11 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     //IsReadOnlyFunc = (DashboardContext context) => true
 });
 
-//RecurringJob.AddOrUpdate<INotificationService>(
-//    "Daily-notification-job",
-//    x => x.SendNewPollsNotification(null),
-//    Cron.Daily(17, 30)
-//);
+RecurringJob.AddOrUpdate<INotificationService>(
+    "Daily-notification-job",
+    x => x.SendNewPollsNotification(null),
+    Cron.Daily(17, 30)
+);
 
 app.UseCors();
 
