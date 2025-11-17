@@ -28,6 +28,10 @@ public class PollService(ApplicationDbContext context, INotificationService noti
 
     public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExsistingTitle = await _context.Polls.AnyAsync(x => x.Title == request.Title);
+        if (isExsistingTitle)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedPollTitle);
+
         var poll = request.Adapt<Poll>();
 
         await _context.Polls.AddAsync(poll, cancellationToken);
@@ -43,14 +47,16 @@ public class PollService(ApplicationDbContext context, INotificationService noti
         if (currentPoll is null)
             return Result.Failure(PollErrors.PollNotFound);
 
-        var poll = request.Adapt<Poll>();
+        var isExsistingTitle = await _context.Polls.AnyAsync(x => x.Title == request.Title && x.Id != id);
+        
+        if (isExsistingTitle)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedPollTitle);
 
-        currentPoll.Title = poll.Title;
-        currentPoll.Summary = poll.Summary;
-        currentPoll.StartsAt = poll.StartsAt;
-        currentPoll.EndsAt = poll.EndsAt;
+        currentPoll.Title = request.Title;
+        currentPoll.Summary = request.Summary;
+        currentPoll.StartsAt = request.StartsAt;
+        currentPoll.EndsAt = request.EndsAt;
 
-        _context.Update(currentPoll);
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

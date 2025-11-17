@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDependencies(builder.Configuration);
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -29,16 +30,18 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     //IsReadOnlyFunc = (DashboardContext context) => true
 });
 
-RecurringJob.AddOrUpdate<INotificationService>(
-    "Daily-notification-job",
-    x => x.SendNewPollsNotification(null),
-    Cron.Daily(17, 30)
-);
+//RecurringJob.AddOrUpdate<INotificationService>(
+//    "Daily-notification-job",
+//    x => x.SendNewPollsNotification(null),
+//    Cron.Daily(17, 30)
+//);
 
 app.UseCors();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseExceptionHandler();
 
 app.Run(); 
