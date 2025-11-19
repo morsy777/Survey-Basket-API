@@ -25,10 +25,12 @@ global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.IdentityModel.Tokens;
 
 global using SurveyBasket;
+global using SurveyBasket.Contracts.Answers;
 global using SurveyBasket.Abstractions;
 global using SurveyBasket.Authentication;
 global using SurveyBasket.Abstractions.Consts;
 global using SurveyBasket.Contracts.Authentication;
+global using SurveyBasket.Contracts.Questions;
 global using SurveyBasket.Contracts.Polls;
 global using SurveyBasket.Contracts.User;
 global using SurveyBasket.Entities;
