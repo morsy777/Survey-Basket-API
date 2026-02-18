@@ -8,5 +8,5 @@ public sealed class Question : AuditableEntity
     public bool IsActive { get; set; } = true;
 
     public Poll Poll { get; set; } = default!;
-    public ICollection<Answer> Asnwers { get; set; } = [];
+    public ICollection<Answer> Answers { get; set; } = [];
 }

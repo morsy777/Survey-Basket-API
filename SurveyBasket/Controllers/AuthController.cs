@@ -38,9 +38,21 @@ public class AuthController(IAuthService authService) : ControllerBase
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();
     }
 
+    // This endpoint to confirm email by front-end
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
     {
+        var authResult = await _authService.ConfirmEmailAsync(request);
+
+        return authResult.IsSuccess ? Ok() : authResult.ToProblem();
+    }
+
+    // This Endpoint to confirm email automatically
+    [AllowAnonymous]
+    [HttpGet("confirm-email-auto")]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string code, CancellationToken cancellationToken)
+    {
+        var request = new ConfirmEmailRequest(userId, code);
         var authResult = await _authService.ConfirmEmailAsync(request);
 
         return authResult.IsSuccess ? Ok() : authResult.ToProblem();

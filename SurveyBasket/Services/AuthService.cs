@@ -5,7 +5,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     IJwtProvider jwtProvider,
     ILogger<AuthService> logger,
     IEmailSender emailSender,
-    IHttpContextAccessor httpContextAccessor) : IAuthService
+    IHttpContextAccessor httpContextAccessor,
+    IConfiguration configuration) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
@@ -13,7 +14,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     private readonly ILogger<AuthService> _logger = logger;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-
+    private readonly IConfiguration _configuration = configuration;
     private readonly int _refreshTokenExpireDays = 14;
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password,
@@ -285,6 +286,14 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     private async Task SendConfirmationEmail(ApplicationUser user, string code)
     {
         // TODO: Take the frontend origin from the request headers
+        var baseUrl = _configuration["AppUrl"]?.TrimEnd('/');
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            _logger.LogError("AppUrl configuration is missing");
+            throw new InvalidOperationException("AppUrl is not configured in appsettings.json");
+        }
+
+        // TODO: Take the frontend origin from the request headers
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
         // TODO: Generate email body
@@ -292,7 +301,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             templateModel: new Dictionary<string, string>
             {
                     {"{{name}}", user.FirstName},
-                    {"{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
+                    {"{{action_url}}", $"{baseUrl}/auth/confirm-email?userId={user.Id}&code={code}"}
             }
 
         );
@@ -307,12 +316,19 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         // TODO: Take the frontend origin from the request headers
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
+        var baseUrl = _configuration["AppUrl"]?.TrimEnd('/');
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            _logger.LogError("AppUrl configuration is missing");
+            throw new InvalidOperationException("AppUrl is not configured in appsettings.json");
+        }
+
         // TODO: Generate email body
         var emailBody = EmailBodyBuilder.GenerateEmailBody("ForgetPassword",
             templateModel: new Dictionary<string, string>
             {
                     {"{{name}}", user.FirstName},
-                    {"{{action_url}}", $"{origin}/auth/forgetPassword?email={user.Email}&code={code}"}
+                    {"{{action_url}}", $"{baseUrl}/auth/forgetPassword?email={user.Email}&code={code}"}
             }
 
         );

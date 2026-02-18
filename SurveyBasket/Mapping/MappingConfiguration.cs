@@ -9,5 +9,12 @@ public class MappingConfiguration : IRegister
 
         config.NewConfig<ApplicationUser, UserProfileResponse>()
             .Map(dest => dest.Username, src => src.Email);
+
+        //config.NewConfig<QuestionRequest, Question>()
+        //    .Ignore(dest => dest.Answers);
+
+        config.NewConfig<QuestionRequest, Question>()
+            .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }));
+
     }
 }

@@ -9,11 +9,18 @@ public class QuestionRequestValidator : AbstractValidator<QuestionRequest>
             .Length(3, 1000);
 
         RuleFor(x => x.Answers)
-            .Must(x => x.Count > 1)
-            .WithMessage("Question should has a tleast 2 answers");
+            .NotNull();
 
         RuleFor(x => x.Answers)
+            .NotNull()
+            .Must(x => x.Count > 1)
+            .WithMessage("Question should has a tleast 2 answers")
+            .When(x => x.Answers != null);
+
+        RuleFor(x => x.Answers)
+            .NotNull()
             .Must(x => x.Distinct().Count() == x.Count())
-            .WithMessage("You cannot add duplicate answers for the same question");
+            .WithMessage("You cannot add duplicate answers for the same question")
+            .When(x => x.Answers != null);
     }
 }

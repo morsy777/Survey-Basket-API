@@ -7,12 +7,11 @@ builder.Services.AddDependencies(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseHangfireDashboard();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseHangfireDashboard();
+
 
 app.UseHttpsRedirection();
 
@@ -30,11 +29,11 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     //IsReadOnlyFunc = (DashboardContext context) => true
 });
 
-//RecurringJob.AddOrUpdate<INotificationService>(
-//    "Daily-notification-job",
-//    x => x.SendNewPollsNotification(null),
-//    Cron.Daily(17, 30)
-//);
+RecurringJob.AddOrUpdate<INotificationService>(
+    "Daily-notification-job",
+    x => x.SendNewPollsNotification(null),
+    Cron.Daily(17, 30)
+);
 
 app.UseCors();
 
