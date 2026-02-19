@@ -32,10 +32,18 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
             : result.ToProblem();
     }
 
-    [HttpPut("{id}/toggleState")]
+    [HttpPut("{id}/toggleStatus")]
     public async Task<IActionResult> ToggleState([FromRoute] int pollId, [FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await _questionService.ToggleStatusAsync(pollId, id, cancellationToken);
+
+        return result.IsSuccess ? NoContent() : result.ToProblem();
+    }
+
+    [HttpPut("{id}/update-question")]
+    public async Task<IActionResult> Update([FromRoute] int pollId, [FromRoute] int id, QuestionRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _questionService.UpdateAsync(pollId, id, request, cancellationToken);
 
         return result.IsSuccess ? NoContent() : result.ToProblem();
     }

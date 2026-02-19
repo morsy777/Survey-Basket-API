@@ -14,7 +14,9 @@ public class MappingConfiguration : IRegister
         //    .Ignore(dest => dest.Answers);
 
         config.NewConfig<QuestionRequest, Question>()
-            .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }));
+            .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }))
+            .Ignore(dest => dest.PollId);
+
 
     }
 }

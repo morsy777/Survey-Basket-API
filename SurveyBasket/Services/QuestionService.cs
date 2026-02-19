@@ -1,4 +1,6 @@
 ﻿
+using SurveyBasket.Entities;
+
 namespace SurveyBasket.Services;
 
 public class QuestionService(ApplicationDbContext context) : IQuestionService
@@ -61,6 +63,32 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         return Result.Success(question.Adapt<QuestionResponse>());
     }
 
+    public async Task<Result> UpdateAsync(int pollId, int id, QuestionRequest request, CancellationToken cancellationToken = default)
+    {
+        var isContentExist = await _context.Questions
+            .AnyAsync(x => x.Content == request.Content && x.PollId == pollId && x.Id != id, cancellationToken);
+
+        if (isContentExist)
+            return Result.Failure(QuestionErrors.DuplicatedQuestionContent);
+
+        var question = await _context.Questions
+            .Include(x => x.Answers)
+            .SingleOrDefaultAsync(x => x.PollId == pollId && x.Id == id, cancellationToken);
+
+        if(question is null)
+            return Result.Failure(QuestionErrors.QuestionNotFound);
+
+        _context.Answers.RemoveRange(question.Answers);
+
+        request.Adapt(question);
+
+        question.PollId = pollId;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();    
+    }
+
     public async Task<Result> ToggleStatusAsync(int pollId, int id, CancellationToken cancellationToken = default)
     {
         var questionIsExist = await _context.Questions
@@ -73,9 +101,10 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
             .Where(x => x.PollId == pollId && x.Id == id)
             .ExecuteUpdateAsync(setters =>
                 setters
-                    .SetProperty(x => x.IsActive, x => !x.IsActive)
-            );
+                    .SetProperty(x => x.IsActive, x => !x.IsActive),
+                cancellationToken);
 
         return Result.Success();
     }
+
 }
