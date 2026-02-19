@@ -78,15 +78,28 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         if(question is null)
             return Result.Failure(QuestionErrors.QuestionNotFound);
 
-        _context.Answers.RemoveRange(question.Answers);
+        question.Content = request.Content;
 
-        request.Adapt(question);
+        // current answers
+        var currentAnswers = question.Answers.Select(x => x.Content).ToList();
 
-        question.PollId = pollId;
+        // add new answer
+        var newAnswers = request.Answers.Except(currentAnswers).ToList();
+
+        newAnswers.ForEach(answer =>
+        {
+            question.Answers.Add(new Answer { Content = answer });
+        });
+
+        // deactivate old answer 
+        question.Answers.ToList().ForEach(answer => 
+        {
+            answer.IsActive = request.Answers.Contains(answer.Content);
+        });
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();    
+        return Result.Success();
     }
 
     public async Task<Result> ToggleStatusAsync(int pollId, int id, CancellationToken cancellationToken = default)
