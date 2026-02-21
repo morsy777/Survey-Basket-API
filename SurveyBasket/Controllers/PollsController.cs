@@ -7,13 +7,17 @@ public class PollsController(IPollService pollService) : ControllerBase
 {
     private readonly IPollService _pollService = pollService;
 
-    [HttpGet("GetAll")]
+    [HttpGet("")]
     [EnableCors("MyPolicy2")]
     public async Task<IActionResult> GetAll(CancellationToken cancellation)
     {
-        var polls = await _pollService.GetAllAsync(cancellation);
+        return Ok(await _pollService.GetAllAsync(cancellation));
+    }
 
-        return polls.IsSuccess ? Ok(polls.Value) : polls.ToProblem();
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrent(CancellationToken cancellation)
+    {
+        return Ok(await _pollService.GetCurrentAsync(cancellation));
     }
 
     [HttpGet("{Id}")]

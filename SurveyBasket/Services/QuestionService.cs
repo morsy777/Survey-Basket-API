@@ -39,6 +39,26 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         return Result.Success(question);
     }
 
+    public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
+    {
+        var hasVote = await _context.Votes
+            .AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken);
+
+        if (hasVote)
+            return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.DuplicatedVote);
+
+        var isPublishedPoll = await _context.Polls
+            .AnyAsync(x => x.IsPublished! || (x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow)), cancellationToken);
+
+        if (isPublishedPoll)
+            return Result.Failure<IEnumerable<QuestionResponse>>(PollErrors.PollNotFound);
+
+
+
+
+
+    }
+
     public async Task<Result<QuestionResponse>> AddAsync(int pollId, QuestionRequest request, CancellationToken cancellationToken = default)
     {
         var pollIsExist = await _context.Polls.AnyAsync(x => x.Id == pollId);
@@ -119,5 +139,6 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
 
         return Result.Success();
     }
+
 
 }

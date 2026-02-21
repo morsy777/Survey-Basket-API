@@ -7,4 +7,6 @@ public class PollErrors
 
     public static readonly Error DuplicatedPollTitle =
         new Error("Poll.DuplicatedTitle", "Another poll with the same title already exist", StatusCodes.Status409Conflict);
+
+    //public static readonly Error 
 }

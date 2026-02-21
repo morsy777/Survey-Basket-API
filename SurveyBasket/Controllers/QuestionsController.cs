@@ -40,7 +40,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
         return result.IsSuccess ? NoContent() : result.ToProblem();
     }
 
-    [HttpPut("{id}/update-question")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromRoute] int pollId, [FromRoute] int id, QuestionRequest request, CancellationToken cancellationToken)
     {
         var result = await _questionService.UpdateAsync(pollId, id, request, cancellationToken);
