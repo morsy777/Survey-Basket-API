@@ -13,7 +13,11 @@ public class PollService(ApplicationDbContext context, INotificationService noti
 
     public async Task<IEnumerable<PollResponse>> GetCurrentAsync(CancellationToken cancellationToken = default) =>
         await _context.Polls
-            .Where(x => x.IsPublished && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow))
+            .Where(x => x.IsPublished 
+                && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) 
+                && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow)
+                && _context.Votes.Any(v => v.PollId == x.Id)!
+            )
             .AsNoTracking()
             .ProjectToType<PollResponse>()
             .ToListAsync(cancellationToken);

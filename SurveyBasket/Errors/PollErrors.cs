@@ -8,5 +8,6 @@ public class PollErrors
     public static readonly Error DuplicatedPollTitle =
         new Error("Poll.DuplicatedTitle", "Another poll with the same title already exist", StatusCodes.Status409Conflict);
 
-    //public static readonly Error 
+    public static readonly Error PollNotPublished =
+        new Error("Poll.PollNotPublished", "This Poll doesn't published yet", StatusCodes.Status409Conflict);
 }

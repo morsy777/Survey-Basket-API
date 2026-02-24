@@ -9,7 +9,7 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
 
     public async Task<Result<IEnumerable<QuestionResponse>>> GetAllAsync(int pollId, CancellationToken cancellationToken = default)
     {
-        var pollIsExist = await _context.Polls.AnyAsync(x => x.Id == pollId);
+        var pollIsExist = await _context.Polls.AnyAsync(x => x.Id == pollId, cancellationToken);
 
         if (!pollIsExist)
             return Result.Failure<IEnumerable<QuestionResponse>>(PollErrors.PollNotFound);
@@ -47,16 +47,30 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         if (hasVote)
             return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.DuplicatedVote);
 
-        var isPublishedPoll = await _context.Polls
-            .AnyAsync(x => x.IsPublished! || (x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow)), cancellationToken);
+        var pollIsExists = await _context.Polls
+            .AnyAsync(x => x.Id ==  pollId
+                && x.IsPublished! 
+                && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) 
+                && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow),
+                cancellationToken);
 
-        if (isPublishedPoll)
+        if (!pollIsExists)
             return Result.Failure<IEnumerable<QuestionResponse>>(PollErrors.PollNotFound);
 
+        var questions = await _context.Questions
+            .Where(x => x.PollId == pollId && x.IsActive)
+            .Include(x => x.Answers)
+            .Select(q => new QuestionResponse(
+                q.Id,
+                q.Content,
+                q.Answers
+                    .Where(a => a.IsActive)
+                    .Select(a => new AnswerResponse(a.Id, a.Content))
+                ))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-
-
-
+        return Result.Success<IEnumerable<QuestionResponse>>(questions);
     }
 
     public async Task<Result<QuestionResponse>> AddAsync(int pollId, QuestionRequest request, CancellationToken cancellationToken = default)
