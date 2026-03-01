@@ -33,6 +33,7 @@ global using SurveyBasket.Contracts.Authentication;
 global using SurveyBasket.Contracts.Questions;
 global using SurveyBasket.Contracts.Polls;
 global using SurveyBasket.Contracts.User;
+global using SurveyBasket.Contracts.Vote;
 global using SurveyBasket.Entities;
 global using SurveyBasket.Errors;
 global using SurveyBasket.Extensions;
