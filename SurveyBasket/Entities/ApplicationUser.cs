@@ -6,4 +6,5 @@ public sealed class ApplicationUser : IdentityUser
     public string LastName { get; set; } = string.Empty;
 
     public List<RefreshToken> RefreshTokens { get; set; } = [];
+    public ICollection<Vote> Votes { get; set; } = [];
 }
