@@ -3,6 +3,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDependencies(builder.Configuration);
 
+builder.Services.AddDistributedMemoryCache();
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 var app = builder.Build();
 
@@ -11,7 +17,6 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHangfireDashboard();
-
 
 app.UseHttpsRedirection();
 
@@ -34,6 +39,8 @@ RecurringJob.AddOrUpdate<INotificationService>(
     x => x.SendNewPollsNotification(null),
     Cron.Daily(17, 30)
 );
+
+app.UseSerilogRequestLogging();
 
 app.UseCors();
 

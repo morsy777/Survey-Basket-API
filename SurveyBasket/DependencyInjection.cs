@@ -56,6 +56,9 @@ public static class DependencyInjection
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
+        // Distributed Caching
+        services.AddScoped<ICacheService, CacheService>();
+
         return services;
     }
 
