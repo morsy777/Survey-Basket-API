@@ -56,8 +56,9 @@ public static class DependencyInjection
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
-        // Distributed Caching
-        services.AddScoped<ICacheService, CacheService>();
+        // Caching
+        //services.AddScoped<ICacheService, CacheService>();
+        services.AddHybridCache();
 
         return services;
     }
@@ -90,7 +91,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        //services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
