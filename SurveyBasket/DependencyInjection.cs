@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Org.BouncyCastle.Tls;
+using SurveyBasket.Authentication.Filters;
 using SurveyBasket.Settings;
 
 namespace SurveyBasket;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
+        services.AddScoped<IRoleService, RoleService>();
 
         // Mail Settings
         services.AddScoped<IEmailSender, EmailService>();
@@ -96,6 +98,10 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+        // Role-Based Authentication
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
         services.AddOptions<JwtOptions>()
@@ -133,7 +139,6 @@ public static class DependencyInjection
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = true;
         });
-
 
         return services;
     }
