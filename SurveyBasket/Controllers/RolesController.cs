@@ -24,4 +24,15 @@ public class RolesController(IRoleService roleService) : ControllerBase
 
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+
+    [HttpPost("")]
+    [HasPermission(Permissions.AddRoles)]
+    public async Task<IActionResult> Add([FromBody] RoleRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _roleService.AddAsync(request, cancellationToken);
+
+        return result.IsSuccess 
+            ? CreatedAtAction(nameof(Get), new {id = result.Value.Id}, result!.Value)
+            : result.ToProblem();
+    }
 }
