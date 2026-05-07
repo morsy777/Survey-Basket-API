@@ -17,7 +17,7 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
     public async Task<Result<RoleDetialResponse>> GetAsync(string RoleId, CancellationToken cancellationToken = default)
     {
-        if(await _roleManager.FindByIdAsync(RoleId) is not { } role)
+        if (await _roleManager.FindByIdAsync(RoleId) is not { } role)
             return Result.Failure<RoleDetialResponse>(RoleErrors.RoleNotFound);
 
         var permissions = await _roleManager.GetClaimsAsync(role);
@@ -34,9 +34,9 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
     public async Task<Result<RoleDetialResponse>> AddAsync(RoleRequest request, CancellationToken cancellationToken = default)
     {
-        var roleIsExist = await _roleManager.RoleExistsAsync(request.Name);
+        var roleIsExists = await _roleManager.RoleExistsAsync(request.Name);
 
-        if(roleIsExist)
+        if (roleIsExists)
             return Result.Failure<RoleDetialResponse>(RoleErrors.DuplicatedRole);
 
         var allowedPermissions = Permissions.GetAllPermissions();
@@ -52,7 +52,7 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
 
         var result = await _roleManager.CreateAsync(role);
 
-        if(result.Succeeded)
+        if (result.Succeeded)
         {
             var permissions = request.Permissions
                 .Select(x => new IdentityRoleClaim<string>
@@ -78,5 +78,79 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
         var error = result.Errors.First();
 
         return Result.Failure<RoleDetialResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> UpdateAsync(string id, RoleRequest request, CancellationToken cancellationToken = default)
+    {
+        var roleIsExists = await _roleManager.Roles.AnyAsync(x => x.Name == request.Name && x.Id != id, cancellationToken);
+
+        if (roleIsExists)
+            return Result.Failure(RoleErrors.DuplicatedRole);
+
+        if (await _roleManager.FindByIdAsync(id) is not { } role)
+            return Result.Failure(RoleErrors.RoleNotFound);
+
+        var allowedPermissions = Permissions.GetAllPermissions();
+
+        if (request.Permissions.Except(allowedPermissions).Any())
+            return Result.Failure(RoleErrors.InvalidPermissions);
+
+        role.Name = request.Name;
+
+        var result = await _roleManager.UpdateAsync(role);
+
+        if (result.Succeeded)
+        {
+            var currentPermissions = await _context.RoleClaims
+                .Where(x => x.RoleId == id && x.ClaimType == Permissions.Type)
+                .Select(x => x.ClaimValue)
+                .ToListAsync(cancellationToken);
+
+            // Case 1: new permissions exist in dto & don't exist in currentPermissions for this role.
+            var newPermissions = request.Permissions
+                .Except(currentPermissions)
+                .Select(x => new IdentityRoleClaim<string>
+                {
+                    ClaimType = Permissions.Type,
+                    ClaimValue = x,
+                    RoleId = id
+                });
+
+            // Case 2: Permission that exist in this role at DB & don't exist in dto.
+            var removedPermissions = currentPermissions.Except(request.Permissions);
+
+            await _context.RoleClaims
+                .Where(x => x.RoleId == id && removedPermissions.Contains(x.ClaimValue))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _context.AddRangeAsync(newPermissions, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        }
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> ToggleStatusAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var roleIsExists = await _roleManager.Roles.AnyAsync(x => x.Id == id, cancellationToken);
+
+        if (await _roleManager.FindByIdAsync(id) is not { } role)
+            return Result.Failure(RoleErrors.RoleNotFound);
+
+        role.IsDeleted = !role.IsDeleted;
+
+        var result = await _roleManager.UpdateAsync(role);
+
+        if(!result.Succeeded)
+        {
+            var error = result.Errors.First();
+            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        }
+        
+        return Result.Success(result);
     }
 }
