@@ -1,0 +1,10 @@
+﻿namespace SurveyBasket.Contracts.User;
+
+public record UserResponse(
+    string Id,
+    string FristName,
+    string LastName,
+    string Email,
+    bool IsDisabled,
+    IEnumerable<string> Roles
+);

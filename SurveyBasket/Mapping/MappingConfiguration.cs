@@ -10,13 +10,13 @@ public class MappingConfiguration : IRegister
         config.NewConfig<ApplicationUser, UserProfileResponse>()
             .Map(dest => dest.Username, src => src.Email);
 
-        //config.NewConfig<QuestionRequest, Question>()
-        //    .Ignore(dest => dest.Answers);
-
         config.NewConfig<QuestionRequest, Question>()
             .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }))
             .Ignore(dest => dest.PollId);
 
-
+        // new note in mapster
+        config.NewConfig<(ApplicationUser user, IList<string> roles), UserResponse>()
+            .Map(dest => dest, src => src.user)
+            .Map(dest => dest.Roles, src => src.roles);
     }
 }
