@@ -1,8 +1,9 @@
 ﻿namespace SurveyBasket.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, ApplicationDbContext context) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager, IRoleService roleService, ApplicationDbContext context) : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IRoleService _roleService = roleService;
     private readonly ApplicationDbContext _context = context;
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default) =>
@@ -46,6 +47,105 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
         return Result.Success(response);
 
     }
+
+    public async Task<Result<UserResponse>> AddAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken);
+
+        if(emailIsExist)
+            return Result.Failure<UserResponse>(UserErrors.DuplicatedEmail);
+
+        var allowedRoles = await _roleService.GetAllAsync(false, cancellationToken);
+
+        if (request.Roles.Except(allowedRoles.Select(x => x.Name)).Any())
+            return Result.Failure<UserResponse>(RoleErrors.InvalidRoles);
+
+        var user = request.Adapt<ApplicationUser>();
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+
+        if(result.Succeeded)
+        {
+            await _userManager.AddToRolesAsync(user, request.Roles);
+
+            var response = (user, request.Roles).Adapt<UserResponse>();
+
+            return Result.Success(response);
+        }
+
+        var error = result.Errors.First();
+        
+        return Result.Failure<UserResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> UpdateAsync(string id, UpdateUserRequest request, CancellationToken cancellationToken = default)
+    {
+        if (await _userManager.FindByIdAsync(id) is not { } user)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var emailIsExist = await _userManager.Users.AnyAsync(x => x.Email == request.Email && x.Id != id, cancellationToken);
+
+        if (emailIsExist)
+            return Result.Failure(UserErrors.DuplicatedEmail);
+
+        var allowedRoles = await _roleService.GetAllAsync(false, cancellationToken);
+
+        if (request.Roles.Except(allowedRoles.Select(x => x.Name)).Any())
+            return Result.Failure(RoleErrors.InvalidRoles);
+
+        user = request.Adapt(user);
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            await _context.UserRoles
+                .Where(x => x.UserId == id)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await _userManager.AddToRolesAsync(user, request.Roles);
+
+            return Result.Success();
+        }
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> ToggleStatusAsync(string id, CancellationToken cancellationToken = default)
+    {
+        if(await _userManager.FindByIdAsync(id) is not { } user)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        user.IsDisabled = !user.IsDisabled;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+            return Result.Success();
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    public async Task<Result> UnlockAsync(string id, CancellationToken cancellationToken = default)
+    {
+        if (await _userManager.FindByIdAsync(id) is not { } user)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var result = await _userManager.SetLockoutEndDateAsync(user, null);
+
+        if (result.Succeeded)
+            return Result.Success();
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+
 
     public async Task<Result<UserProfileResponse>> GetProfileAsync(string userId)
     {

@@ -7,9 +7,12 @@ public class RoleErrors
 
     public static readonly Error DuplicatedRole =
         new Error("Role.DuplicatedRole", "Another role with the same name already Exist", StatusCodes.Status409Conflict);
+    
+    public static readonly Error InvalidRoles =
+        new Error("Role.InvalidRoles", "Invalid Roles", StatusCodes.Status400BadRequest);
 
     public static readonly Error InvalidPermissions =
-        new Error("User.InvalidPermissions", "Invalid permissions", StatusCodes.Status400BadRequest);
+        new Error("Role.InvalidPermissions", "Invalid permissions", StatusCodes.Status400BadRequest);
 
     //public static readonly Error InvalidRefreshToken =
     //    new Error("User.InvalidRefreshToken", "Invalid Refresh Token", StatusCodes.Status401Unauthorized);

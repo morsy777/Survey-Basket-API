@@ -2,7 +2,7 @@
 
 public record UserResponse(
     string Id,
-    string FristName,
+    string firstName,
     string LastName,
     string Email,
     bool IsDisabled,
