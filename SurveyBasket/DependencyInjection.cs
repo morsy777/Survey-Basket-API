@@ -1,10 +1,4 @@
-﻿using Hangfire;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Org.BouncyCastle.Tls;
-using SurveyBasket.Authentication.Filters;
-using SurveyBasket.Settings;
-
-namespace SurveyBasket;
+﻿namespace SurveyBasket;
 
 public static class DependencyInjection
 {
@@ -63,7 +57,12 @@ public static class DependencyInjection
         services.AddHybridCache();
 
         // Health Check
-        services.AddHealthChecks();
+        services.AddHealthChecks()
+            .AddSqlServer(name: "database", connectionString: connectionString)
+            .AddHangfire(options => 
+            {
+                options.MinimumAvailableServers = 1;
+            });
 
         return services;
     }
