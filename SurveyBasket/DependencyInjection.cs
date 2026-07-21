@@ -1,4 +1,6 @@
-﻿using SurveyBasket.Health;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using SurveyBasket.Health;
+using System.Threading.RateLimiting;
 
 namespace SurveyBasket;
 
@@ -66,6 +68,37 @@ public static class DependencyInjection
                 options.MinimumAvailableServers = 1;
             })
             .AddCheck<MailProviderHealthCheck>(name: "mail service");
+
+        // Rate limiting
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            //rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
+            //{
+            //    options.TokenLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+            //    options.TokensPerPeriod = 2;
+            //    options.AutoReplenishment = true;
+            //});
+
+            rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+            {
+                options.PermitLimit = 2;
+                options.Window = TimeSpan.FromSeconds(20);
+                options.QueueLimit = 1;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+        });
 
         return services;
     }

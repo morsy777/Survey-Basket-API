@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Controllers;
+﻿using Microsoft.AspNetCore.RateLimiting;
+
+namespace SurveyBasket.Controllers;
 
 [Route("[controller]")]
 [ApiController]
@@ -93,4 +95,13 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
+
+    [HttpGet("test")]
+    [EnableRateLimiting("fixed")]
+    public IActionResult Test()
+    {
+        Thread.Sleep(1000);
+        return Ok();
+    }
+
 }
