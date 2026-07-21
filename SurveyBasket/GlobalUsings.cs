@@ -23,6 +23,7 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Cors;
 global using Microsoft.AspNetCore.WebUtilities;
 global using Microsoft.Extensions.Options;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.Extensions.Caching.Distributed;

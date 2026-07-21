@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket;
+﻿using SurveyBasket.Health;
+
+namespace SurveyBasket;
 
 public static class DependencyInjection
 {
@@ -59,10 +61,11 @@ public static class DependencyInjection
         // Health Check
         services.AddHealthChecks()
             .AddSqlServer(name: "database", connectionString: connectionString)
-            .AddHangfire(options => 
+            .AddHangfire(options =>
             {
                 options.MinimumAvailableServers = 1;
-            });
+            })
+            .AddCheck<MailProviderHealthCheck>(name: "mail service");
 
         return services;
     }
