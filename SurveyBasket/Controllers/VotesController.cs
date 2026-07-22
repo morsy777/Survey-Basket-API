@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace SurveyBasket.Controllers;
 
 [Route("api/polls/{pollId}/vote")]
 [ApiController]
 [Authorize(Roles = DefaultRoles.Member)]
+[EnableRateLimiting("concurrency")]
 public class VotesController(IQuestionService questionService, IVoteService voteService) : ControllerBase
 {
     private readonly IQuestionService _questionService = questionService;
@@ -26,6 +28,4 @@ public class VotesController(IQuestionService questionService, IVoteService vote
 
         return result.IsSuccess ? Created() : result.ToProblem();
     }
-
-
 }

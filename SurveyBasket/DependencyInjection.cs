@@ -85,12 +85,23 @@ public static class DependencyInjection
                 )
             );
 
-            //rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
-            //{
-            //    options.PermitLimit = 2;
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
+            rateLimiterOptions.AddPolicy("userLimit", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.GetUserId(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
+            rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
+            {
+                options.PermitLimit = 1000;
+                options.QueueLimit = 100;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
 
             //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
             //{
