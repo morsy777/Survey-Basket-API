@@ -4,6 +4,7 @@ namespace SurveyBasket.Controllers;
 
 [Route("[controller]")]
 [ApiController]
+[EnableRateLimiting("ipLimit")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
@@ -95,13 +96,4 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
-
-    [HttpGet("test")]
-    [EnableRateLimiting("fixed")]
-    public IActionResult Test()
-    {
-        Thread.Sleep(1000);
-        return Ok();
-    }
-
 }

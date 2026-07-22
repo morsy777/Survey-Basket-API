@@ -74,6 +74,17 @@ public static class DependencyInjection
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            rateLimiterOptions.AddPolicy("ipLimit", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
             //rateLimiterOptions.AddConcurrencyLimiter("concurrency", options =>
             //{
             //    options.PermitLimit = 2;
@@ -91,13 +102,13 @@ public static class DependencyInjection
             //    options.AutoReplenishment = true;
             //});
 
-            rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
-            {
-                options.PermitLimit = 2;
-                options.Window = TimeSpan.FromSeconds(20);
-                options.QueueLimit = 1;
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            });
+            //rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(20);
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
         });
 
         return services;
