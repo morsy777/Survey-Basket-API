@@ -40,7 +40,7 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
 RecurringJob.AddOrUpdate<INotificationService>(
     "Daily-notification-job",
     x => x.SendNewPollsNotification(null),
-    Cron.Daily(17, 30)
+    Cron.Daily
 );
 
 app.UseSerilogRequestLogging();

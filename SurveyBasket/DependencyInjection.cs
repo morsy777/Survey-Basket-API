@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.RateLimiting;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.RateLimiting;
 using SurveyBasket.Health;
 using System.Threading.RateLimiting;
 
@@ -69,7 +70,7 @@ public static class DependencyInjection
             })
             .AddCheck<MailProviderHealthCheck>(name: "mail service");
 
-        // Rate limiting
+        // Rate limiting (Move this code to private method)
         services.AddRateLimiter(rateLimiterOptions =>
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -102,24 +103,21 @@ public static class DependencyInjection
                 options.QueueLimit = 100;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             });
+        });
 
-            //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
-            //{
-            //    options.TokenLimit = 2;
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
-            //    options.TokensPerPeriod = 2;
-            //    options.AutoReplenishment = true;
-            //});
+        // Versioning
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
 
-            //rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
-            //{
-            //    options.PermitLimit = 2;
-            //    options.Window = TimeSpan.FromSeconds(20);
-            //    options.QueueLimit = 1;
-            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            //});
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        })
+        .AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
         });
 
         return services;
